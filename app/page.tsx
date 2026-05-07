@@ -38,20 +38,25 @@ export default function DashboardPage() {
   const [sortMode, setSortMode] = useState<SortMode>("deadline");
 
   // 봇 카드는 client-only (SSR/CSR Date.now() 차이로 인한 hydration mismatch 방지).
-  const [sessionStart, setSessionStart] = useState<number | null>(null);
+  // sessionStart는 첫 클라이언트 렌더에 lazy init으로 즉시 세팅.
+  // mounted 플래그로 SSR HTML과 hydration 첫 렌더를 일치시킨 뒤, useEffect 직후 봇 카드를 노출한다.
+  const [sessionStart] = useState<number | null>(() =>
+    typeof window === "undefined" ? null : Date.now(),
+  );
+  const [mounted, setMounted] = useState(false);
   useEffect(() => {
-    setSessionStart(Date.now());
+    setMounted(true);
   }, []);
 
   const lists = useMemo(() => {
-    if (sessionStart === null) return realLists;
+    if (!mounted || sessionStart === null) return realLists;
     const botSummaries = BOTS.map((b) => {
       const summary = botToSummary(b, locale, sessionStart);
       const extra = botPresence[b.shareId] ?? 0;
       return { ...summary, watcherCount: summary.watcherCount + extra };
     });
     return [...realLists, ...botSummaries];
-  }, [realLists, locale, sessionStart, botPresence]);
+  }, [mounted, sessionStart, realLists, locale, botPresence]);
 
   const myExisting = useMemo(
     () => (uid ? lists.find((l) => l.ownerId === uid) : null),
