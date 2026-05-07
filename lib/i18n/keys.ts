@@ -1,0 +1,75 @@
+export type Locale = "ja" | "ko";
+
+export const TRANSLATION_KEYS = [
+  "common.appName",
+  "common.tagline",
+  "common.copyUrl",
+  "common.copied",
+  "common.cancel",
+  "common.confirm",
+  "common.back",
+  "common.loading",
+  "common.countdownWithDays",
+
+  "onboarding.askName",
+  "onboarding.nameHint",
+  "onboarding.shuffle",
+  "onboarding.shuffleIconHint",
+
+  "profile.edit",
+  "profile.save",
+  "profile.shuffleIcon",
+
+  "dashboard.title",
+  "dashboard.titleEmpty",
+  "dashboard.create",
+  "dashboard.viewMyLive",
+  "dashboard.empty",
+  "dashboard.timeLeft",
+  "dashboard.noDeadline",
+  "dashboard.watchers",
+  "dashboard.progress",
+  "dashboard.sortLabel",
+  "dashboard.sortByDeadline",
+  "dashboard.sortByWatchers",
+
+  "list.titlePlaceholder",
+  "list.defaultTitle",
+  "list.addTodo",
+  "list.todoPlaceholder",
+  "list.deadline",
+  "list.delete",
+  "list.watching",
+  "list.ownerHeader",
+  "list.watchersWith",
+  "list.noTodos",
+  "list.deadlineRequired",
+  "list.deadlinePast",
+  "list.completedAt",
+  "list.otherLives",
+  "list.noOtherLives",
+  "list.endLive",
+  "list.endLiveConfirm",
+  "list.ended",
+  "list.endedDesc",
+  "list.bgmAdd",
+  "list.bgmChange",
+  "list.bgmRemove",
+  "list.bgmPlaceholder",
+  "list.bgmInvalid",
+
+  "status.active",
+  "status.done",
+  "status.expired",
+
+  "reaction.fire",
+  "reaction.muscle",
+  "reaction.eyes",
+  "reaction.heart",
+  "reaction.pray",
+  "reaction.throttled",
+] as const;
+
+export type TranslationKey = (typeof TRANSLATION_KEYS)[number];
+
+export type Dictionary = Record<TranslationKey, string>;

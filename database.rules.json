@@ -1,0 +1,89 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+
+    "users": {
+      ".read": "auth != null",
+      "$uid": {
+        ".write": "auth != null && auth.uid === $uid",
+        "name":    { ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 30" },
+        "color":   { ".validate": "newData.isString()" },
+        "iconKey": { ".validate": "newData.isString() && newData.val().length <= 32" },
+        "$other":  { ".validate": false }
+      }
+    },
+
+    "lists": {
+      "$shareId": {
+        ".read": "auth != null",
+
+        "meta": {
+          ".write": "auth != null && ((newData.exists() && newData.child('ownerId').val() === auth.uid && (!data.exists() || data.child('ownerId').val() === auth.uid)) || (!newData.exists() && data.child('ownerId').val() === auth.uid))",
+          "ownerId":        { ".validate": "newData.isString()" },
+          "title":          { ".validate": "newData.isString() && newData.val().length <= 200" },
+          "createdAt":      { ".validate": "newData.isNumber()" },
+          "youtubeVideoId": { ".validate": "newData.isString() && newData.val().length <= 32" },
+          "$other":         { ".validate": false }
+        },
+
+        "todos": {
+          ".write": "auth != null && root.child('lists').child($shareId).child('meta').child('ownerId').val() === auth.uid",
+          "$todoId": {
+            "text":        { ".validate": "newData.isString() && newData.val().length <= 500" },
+            "done":        { ".validate": "newData.isBoolean()" },
+            "deadline":    { ".validate": "newData.isNumber()" },
+            "status":      { ".validate": "newData.isString() && (newData.val() === 'active' || newData.val() === 'done' || newData.val() === 'expired')" },
+            "createdAt":   { ".validate": "newData.isNumber()" },
+            "completedAt": { ".validate": "newData.isNumber()" },
+            "$other":      { ".validate": false }
+          }
+        },
+
+        "presence": {
+          "$uid": {
+            ".write": "auth != null && auth.uid === $uid",
+            "role":     { ".validate": "newData.isString() && (newData.val() === 'owner' || newData.val() === 'watcher')" },
+            "lastSeen": { ".validate": "newData.isNumber()" },
+            "$other":   { ".validate": false }
+          }
+        },
+
+        "reactions": {
+          "$reactionId": {
+            ".write": "auth != null && ((newData.exists() && newData.child('fromUid').val() === auth.uid && !data.exists()) || (!newData.exists() && data.child('fromUid').val() === auth.uid))",
+            "fromUid":   { ".validate": "newData.isString() && newData.val() === auth.uid" },
+            "emoji":     { ".validate": "newData.isString() && newData.val().length <= 8" },
+            "createdAt": { ".validate": "newData.isNumber()" },
+            "$other":    { ".validate": false }
+          }
+        },
+
+        "reactionCounts": {
+          "$emoji": {
+            ".write": "auth != null && newData.exists()",
+            ".validate": "newData.isNumber() && (data.exists() ? newData.val() === data.val() + 1 : newData.val() === 1)"
+          }
+        }
+      }
+    },
+
+    "active_lists": {
+      ".read": "auth != null",
+      "$shareId": {
+        ".write": "auth != null && ((newData.exists() && newData.child('ownerId').val() === auth.uid) || (!newData.exists() && data.child('ownerId').val() === auth.uid))",
+        "ownerId":      { ".validate": "newData.isString()" },
+        "ownerName":    { ".validate": "newData.isString() && newData.val().length <= 30" },
+        "ownerColor":   { ".validate": "newData.isString()" },
+        "ownerIconKey": { ".validate": "newData.isString() && newData.val().length <= 32" },
+        "title":        { ".validate": "newData.isString()" },
+        "todoCount":    { ".validate": "newData.isNumber()" },
+        "doneCount":    { ".validate": "newData.isNumber()" },
+        "nextDeadline": { ".validate": "newData.isNumber() || !newData.exists()" },
+        "watcherCount": { ".validate": "newData.isNumber()" },
+        "updatedAt":    { ".validate": "newData.isNumber()" },
+        "$other":       { ".validate": false }
+      }
+    }
+  }
+}
