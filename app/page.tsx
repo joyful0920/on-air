@@ -153,10 +153,12 @@ export default function DashboardPage() {
         </button>
       </section>
 
-      {loading ? (
-        <p className="text-center text-onair-mute text-sm">{t("common.loading")}</p>
-      ) : lists.length === 0 ? (
-        <p className="text-center text-onair-mute text-sm py-10">{t("dashboard.empty")}</p>
+      {lists.length === 0 ? (
+        loading ? (
+          <p className="text-center text-onair-mute text-sm">{t("common.loading")}</p>
+        ) : (
+          <p className="text-center text-onair-mute text-sm py-10">{t("dashboard.empty")}</p>
+        )
       ) : (
         <>
           <div className="flex items-center gap-2 text-xs justify-end">
