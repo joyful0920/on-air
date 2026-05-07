@@ -126,7 +126,11 @@ export default function Dashboard() {
         createdAt: Date.now(),
       });
       router.push(`/list/${shareId}`);
+      return;
     }
+    // 첫 가입 직후 대시보드가 stale 상태로 멈추는 케이스 회피.
+    // 강제 reload로 fresh HTML/JS을 받아 봇 라이브 카드가 즉시 보이게 한다.
+    window.location.reload();
   };
 
   const titleText =
