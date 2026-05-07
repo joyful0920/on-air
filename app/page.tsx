@@ -1,6 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+
+// 매 요청마다 SSR. 빌드 시점에 박힌 stale HTML이 Vercel edge cache에 머무는 걸 방지.
+export const dynamic = "force-dynamic";
 import { useRouter } from "next/navigation";
 import { ref, set } from "firebase/database";
 import { nanoid } from "nanoid";
