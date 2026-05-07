@@ -29,7 +29,10 @@ export default function ReactionBar({ onSend, throttled, counts, readOnly }: Pro
   const t = useT();
 
   return (
-    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-30 flex gap-1 bg-onair-panel/95 backdrop-blur border border-onair-line rounded-full px-2 py-1.5 shadow-lg">
+    <div
+      className="fixed left-1/2 -translate-x-1/2 z-30 flex gap-1 bg-onair-panel/95 backdrop-blur border border-onair-line rounded-full px-2 py-1.5 shadow-lg"
+      style={{ bottom: "calc(1.5rem + env(safe-area-inset-bottom, 0px))" }}
+    >
       {REACTIONS.map((r) => {
         const count = counts[r.emoji] ?? 0;
         const interactive = !readOnly;
