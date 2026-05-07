@@ -37,19 +37,21 @@ export default function Dashboard() {
   const [creating, setCreating] = useState(false);
   const [sortMode, setSortMode] = useState<SortMode>("deadline");
 
-  // 첫 렌더부터 봇 카드를 그대로 노출한다. 온보딩 다이얼로그는 portal 오버레이로
-  // 그 위에 뜨므로 본문은 항상 대시보드 상태를 유지.
-  // sessionStart는 useState lazy init으로 마운트 시점에 한 번만 고정 → 카운트다운이 흔들리지 않게.
-  const [sessionStart] = useState<number>(() => Date.now());
+  // 봇 카드는 client-only (SSR/CSR Date.now() 차이로 인한 hydration mismatch 방지).
+  const [sessionStart, setSessionStart] = useState<number | null>(null);
+  useEffect(() => {
+    setSessionStart(Date.now());
+  }, []);
 
   const lists = useMemo(() => {
+    if (sessionStart === null) return realLists;
     const botSummaries = BOTS.map((b) => {
       const summary = botToSummary(b, locale, sessionStart);
       const extra = botPresence[b.shareId] ?? 0;
       return { ...summary, watcherCount: summary.watcherCount + extra };
     });
     return [...realLists, ...botSummaries];
-  }, [sessionStart, realLists, locale, botPresence]);
+  }, [realLists, locale, sessionStart, botPresence]);
 
   const myExisting = useMemo(
     () => (uid ? lists.find((l) => l.ownerId === uid) : null),
@@ -126,12 +128,7 @@ export default function Dashboard() {
         createdAt: Date.now(),
       });
       router.push(`/list/${shareId}`);
-      return;
     }
-    // 첫 가입 직후 대시보드가 stale 상태로 멈추는 케이스 회피.
-    // 단순 reload는 일부 브라우저/CDN 캐시를 통과해버려 같은 stale HTML이 다시 떨어진다.
-    // 타임스탬프 쿼리스트링을 붙여 fresh URL로 navigate → 어떤 캐시 레이어도 우회된다.
-    window.location.href = `/?onboarded=${Date.now()}`;
   };
 
   const titleText =
