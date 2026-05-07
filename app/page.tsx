@@ -129,8 +129,9 @@ export default function Dashboard() {
       return;
     }
     // 첫 가입 직후 대시보드가 stale 상태로 멈추는 케이스 회피.
-    // 강제 reload로 fresh HTML/JS을 받아 봇 라이브 카드가 즉시 보이게 한다.
-    window.location.reload();
+    // 단순 reload는 일부 브라우저/CDN 캐시를 통과해버려 같은 stale HTML이 다시 떨어진다.
+    // 타임스탬프 쿼리스트링을 붙여 fresh URL로 navigate → 어떤 캐시 레이어도 우회된다.
+    window.location.href = `/?onboarded=${Date.now()}`;
   };
 
   const titleText =
