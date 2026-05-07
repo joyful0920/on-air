@@ -38,25 +38,23 @@ export default function DashboardPage() {
   const [sortMode, setSortMode] = useState<SortMode>("deadline");
 
   // 봇 카드는 client-only (SSR/CSR Date.now() 차이로 인한 hydration mismatch 방지).
-  // sessionStart는 첫 클라이언트 렌더에 lazy init으로 즉시 세팅.
-  // mounted 플래그로 SSR HTML과 hydration 첫 렌더를 일치시킨 뒤, useEffect 직후 봇 카드를 노출한다.
-  const [sessionStart] = useState<number | null>(() =>
-    typeof window === "undefined" ? null : Date.now(),
+  // useMemo로 첫 렌더부터 즉시 sessionStart을 세팅 → 봇 카드를 첫 클라이언트 렌더에서 바로 노출.
+  // SSR HTML은 sessionStart=null로 그려지고 (loading 텍스트), CSR 첫 렌더에서 봇 카드로 바뀐다.
+  // 이때 발생하는 hydration mismatch는 React 18이 자동으로 client-side 재렌더로 복구한다.
+  const sessionStart = useMemo<number | null>(
+    () => (typeof window === "undefined" ? null : Date.now()),
+    [],
   );
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   const lists = useMemo(() => {
-    if (!mounted || sessionStart === null) return realLists;
+    if (sessionStart === null) return realLists;
     const botSummaries = BOTS.map((b) => {
       const summary = botToSummary(b, locale, sessionStart);
       const extra = botPresence[b.shareId] ?? 0;
       return { ...summary, watcherCount: summary.watcherCount + extra };
     });
     return [...realLists, ...botSummaries];
-  }, [mounted, sessionStart, realLists, locale, botPresence]);
+  }, [sessionStart, realLists, locale, botPresence]);
 
   const myExisting = useMemo(
     () => (uid ? lists.find((l) => l.ownerId === uid) : null),
