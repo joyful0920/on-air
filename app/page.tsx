@@ -37,17 +37,12 @@ export default function DashboardPage() {
   const [creating, setCreating] = useState(false);
   const [sortMode, setSortMode] = useState<SortMode>("deadline");
 
-  // 봇 카드는 client-only (SSR/CSR Date.now() 차이로 인한 hydration mismatch 방지).
-  // useMemo로 첫 렌더부터 즉시 sessionStart을 세팅 → 봇 카드를 첫 클라이언트 렌더에서 바로 노출.
-  // SSR HTML은 sessionStart=null로 그려지고 (loading 텍스트), CSR 첫 렌더에서 봇 카드로 바뀐다.
-  // 이때 발생하는 hydration mismatch는 React 18이 자동으로 client-side 재렌더로 복구한다.
-  const sessionStart = useMemo<number | null>(
-    () => (typeof window === "undefined" ? null : Date.now()),
-    [],
-  );
+  // 첫 렌더부터 봇 카드를 그대로 노출한다. 온보딩 다이얼로그는 portal 오버레이로
+  // 그 위에 뜨므로 본문은 항상 대시보드 상태를 유지.
+  // sessionStart는 useState lazy init으로 마운트 시점에 한 번만 고정 → 카운트다운이 흔들리지 않게.
+  const [sessionStart] = useState<number>(() => Date.now());
 
   const lists = useMemo(() => {
-    if (sessionStart === null) return realLists;
     const botSummaries = BOTS.map((b) => {
       const summary = botToSummary(b, locale, sessionStart);
       const extra = botPresence[b.shareId] ?? 0;
