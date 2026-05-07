@@ -8,5 +8,6 @@ interface Props {
 }
 
 export default function OnboardingDialog({ onSubmit }: Props) {
-  return <ProfileDialog onSubmit={onSubmit} />;
+  // 페이지 본문에서 띄우는 온보딩은 portal 없이 inline 렌더 → 마운트 지연 제거.
+  return <ProfileDialog onSubmit={onSubmit} portal={false} />;
 }

@@ -21,6 +21,13 @@ interface Props {
   onSubmit: (profile: UserProfile) => void;
   /** 제공되면 취소 버튼을 표시한다. (편집 모드에서 사용) */
   onCancel?: () => void;
+  /**
+   * createPortal로 document.body에 렌더할지 여부.
+   * Header 안에서 띄울 땐(true) backdrop-blur 컨테이닝 블록을 빠져나가야 하지만,
+   * 페이지 본문에서 띄우는 온보딩의 경우(false) inline 렌더가 더 빨라 마운트 지연이 없다.
+   * 기본값 true.
+   */
+  portal?: boolean;
 }
 
 const MAX_LEN = 30;
@@ -39,25 +46,26 @@ function normalizeIconKey(v: string | undefined): IconKey {
   return isIconKey(v) ? v : DEFAULT_ICON_KEY;
 }
 
-export default function ProfileDialog({ initial, onSubmit, onCancel }: Props) {
+export default function ProfileDialog({
+  initial,
+  onSubmit,
+  onCancel,
+  portal = true,
+}: Props) {
   const t = useT();
   const { locale } = useLocale();
   const isEdit = initial !== undefined;
 
-  const [name, setName] = useState(initial?.name ?? "");
-  const [iconKey, setIconKey] = useState<IconKey>(normalizeIconKey(initial?.iconKey));
-  const [color, setColor] = useState<UserColor>(initial?.color ?? (() => pickRandomColor())());
-
-  // 온보딩 모드: 마운트/locale 변경 시 비어 있으면 자동 채움
-  useEffect(() => {
-    if (isEdit) return;
-    setName((prev) => {
-      if (prev.trim()) return prev;
-      const p = randomProfile(locale);
-      setIconKey(p.iconKey);
-      return p.name;
-    });
-  }, [locale, isEdit]);
+  // 첫 렌더부터 랜덤 프로필을 채워두면 useEffect로 채우는 한 번의 추가 렌더가 사라진다.
+  const [name, setName] = useState(() => {
+    if (initial?.name) return initial.name;
+    return randomProfile(locale).name;
+  });
+  const [iconKey, setIconKey] = useState<IconKey>(() => {
+    if (initial?.iconKey && isIconKey(initial.iconKey)) return initial.iconKey;
+    return inferIconKeyFromName(name) ?? DEFAULT_ICON_KEY;
+  });
+  const [color, setColor] = useState<UserColor>(initial?.color ?? pickRandomColor());
 
   const trimmed = name.trim();
   const canSubmit = trimmed.length >= 1 && trimmed.length <= MAX_LEN;
@@ -97,9 +105,6 @@ export default function ProfileDialog({ initial, onSubmit, onCancel }: Props) {
       document.body.style.overflow = prev;
     };
   }, []);
-
-  // SSR 가드: portal은 클라이언트에서만
-  if (typeof document === "undefined") return null;
 
   const dialog = (
     <div className="fixed inset-0 z-50 bg-black/70 overflow-y-auto">
@@ -174,6 +179,11 @@ export default function ProfileDialog({ initial, onSubmit, onCancel }: Props) {
       </div>
     </div>
   );
+
+  if (!portal) return dialog;
+
+  // SSR 가드: portal은 클라이언트에서만
+  if (typeof document === "undefined") return null;
 
   return createPortal(dialog, document.body);
 }
