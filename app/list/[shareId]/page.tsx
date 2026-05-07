@@ -111,7 +111,7 @@ export default function ListPage() {
 
   return (
     <>
-      <div className="flex gap-6">
+      <div className="flex gap-6 pb-28">
         <div className="flex-1 min-w-0">{content}</div>
         <aside className="hidden lg:block w-72 shrink-0">
           <div className="sticky top-20">
